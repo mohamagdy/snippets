@@ -1,3 +1,7 @@
+/*
+	This plugin is used to detect urls in a text field/area and submits the url to the server.
+	It can be used to fetch the url metadata as Facebook does
+*/
 (function($) {
 	$.fn.extend({
 	  detector: function(givenOptions) {
@@ -76,3 +80,13 @@
 	  }
 	});
 })(jQuery);
+
+
+// Example usage
+
+$('.js-BlabContent').detector({
+	apiURL: $('.js-BlabContent').data('url'),
+	beforeSendCallback: disableBlabPostTrigger,
+	successCallback: showURLFetchMeta, // Embeding the url meta into the page
+	saveUrlTo: '.js-BlabURL'
+});
