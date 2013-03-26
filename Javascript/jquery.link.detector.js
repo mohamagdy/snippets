@@ -88,5 +88,5 @@ $('.js-BlabContent').detector({
 	apiURL: $('.js-BlabContent').data('url'),
 	beforeSendCallback: disableBlabPostTrigger,
 	successCallback: showURLFetchMeta, // Embeding the url meta into the page
-	saveUrlTo: '.js-BlabURL'
+	saveUrlTo: '.js-BlabURL' // Save the url in the HTML DOM
 });
