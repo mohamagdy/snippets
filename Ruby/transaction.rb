@@ -57,3 +57,55 @@ class ExportableTransaction < Transaction
     .order("transactions.server_time_created_at DESC")
   end
 end
+
+# Rspec tests
+describe ExportableTransaction do
+  let(:merchant) { create(:merchant, country: Country.de) }
+  let(:transactions_count) { 5 }
+  let(:paid_out_status) { TransactionStatus.where(name: TransactionStatus::PAID_OUT).first }
+  let(:transactions) do
+    transactions_count.times.map do
+     create(
+      :transaction,
+      merchant: merchant,
+      current_status_id: paid_out_status.id,
+      tx_result: Transaction::TRANSACTION_SUCCESSFUL
+    )
+   end
+  end
+
+  let(:old_transaction) do
+    create(
+      :transaction,
+      merchant: merchant,
+      current_status_id: paid_out_status.id,
+      tx_result: Transaction::TRANSACTION_SUCCESSFUL,
+      server_time_created_at: 1.month.ago
+    )
+  end
+
+  context "merchant's shortened transactions" do
+    it "returns the merchant's transactions" do
+      transactions
+
+      expect(
+        merchant.exportable_transactions.shortened.map(&:transaction_code).sort
+      ).to eq(merchant.transactions.pluck(:transaction_code).sort)
+    end
+  end
+
+  context "total amount per time" do
+    it "returns the total amout in a specific time frame" do
+      transactions
+      old_transaction
+
+      expect(
+        merchant.exportable_transactions.total_amount(1.day.ago, Time.now)
+      ).to eq(transactions.sum(&:amount).to_f)
+
+      expect(
+        merchant.exportable_transactions.total_amount(2.months.ago, 1.month.ago)
+      ).to eq(old_transaction.amount.to_f.round(2))
+    end
+  end
+end
